@@ -2,20 +2,21 @@ import { useState } from "react";
 import { Camera } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../redux/store/Store";
-import { updateImagePath } from "../../redux/slice/userSlice";
+import {
+  updateImagePath,
+  updateUserDetails,
+} from "../../redux/slice/userSlice";
 import axios from "axios";
 import Cookie from "js-cookie";
 
 const UserProfile = () => {
   const dispatch = useDispatch();
-  const userData = useSelector((state: RootState) => {
-    return state.user.user;
-  });
+  const userData = useSelector((state: RootState) => state.user.user);
   const [isEditing, setIsEditing] = useState(false);
   const [userDetails, setUserDetails] = useState({
-    name: "",
-    email: "",
-    phone: "",
+    name: userData?.name || "",
+    email: userData?.email || "",
+    phone: userData?.phone || "",
   });
   const [tempDetails, setTempDetails] = useState({ ...userDetails });
   const [profileImage, setProfileImage] = useState<string | null>(
@@ -26,12 +27,9 @@ const UserProfile = () => {
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files && event.target.files[0];
-    if (!file) {
-      return; // Early return if no file is selected
-    }
+    if (!file) return;
 
     if (file) {
-      // Show preview
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === "string") {
@@ -41,14 +39,10 @@ const UserProfile = () => {
       reader.readAsDataURL(file);
 
       try {
-        // Create form data
         const formData = new FormData();
         formData.append("image", file);
 
-        // Get token from cookie
-        const token = Cookie.get("Accesstoken"); // Assuming 'userToken' is your cookie name
-        console.log("token:", token);
-        // Send request to backend
+        const token = Cookie.get("Accesstoken");
         const response = await axios.post(
           "http://localhost:3000/uploadimage",
           formData,
@@ -60,25 +54,43 @@ const UserProfile = () => {
           }
         );
 
-        console.log("data:", response.data.data.user.imagePath);
-
         if (response.data.success && response.data) {
-          // Handle successful upload
           dispatch(
             updateImagePath({ imagePath: response.data.data.user.imagePath })
           );
-          console.log("Image uploaded successfully");
         }
       } catch (error) {
         console.error("Error uploading image:", error);
-        // HhandleEditandle error - you might want to show an error message to the user
       }
     }
   };
-  
-  const handleEdit = () => {
+
+  const handleEdit = async () => {
     if (isEditing) {
-      setUserDetails(tempDetails);
+      console.log("tempDetails", tempDetails);
+      try {
+        const token = Cookie.get("Accesstoken");
+        const response = await axios.put(
+          "http://localhost:3000/updateprofile",
+          tempDetails,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log("response:", response);
+
+        if (response.data.success) {
+          dispatch(updateUserDetails(tempDetails));
+          setUserDetails(tempDetails);
+        }
+      } catch (error) {
+        console.error("Error updating profile:", error);
+        // Revert changes on error
+        setTempDetails({ ...userDetails });
+      }
     } else {
       setTempDetails({ ...userDetails });
     }
@@ -90,7 +102,7 @@ const UserProfile = () => {
     setIsEditing(false);
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setTempDetails((prev) => ({
       ...prev,
@@ -143,13 +155,13 @@ const UserProfile = () => {
                   <input
                     type="text"
                     name="name"
-                    value={userData?.name}
+                    value={tempDetails.name}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 ) : (
                   <p className="text-gray-900 p-2 border rounded-md bg-gray-50">
-                    {userData?.name}
+                    {userDetails.name}
                   </p>
                 )}
               </div>
@@ -162,13 +174,13 @@ const UserProfile = () => {
                   <input
                     type="email"
                     name="email"
-                    value={userData?.email}
+                    value={tempDetails.email}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 ) : (
                   <p className="text-gray-900 p-2 border rounded-md bg-gray-50">
-                    {userData?.email}
+                    {userDetails.email}
                   </p>
                 )}
               </div>
@@ -181,13 +193,13 @@ const UserProfile = () => {
                   <input
                     type="tel"
                     name="phone"
-                    value={userData?.phone}
+                    value={tempDetails.phone}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 ) : (
                   <p className="text-gray-900 p-2 border rounded-md bg-gray-50">
-                    {userData?.phone}
+                    {userDetails.phone}
                   </p>
                 )}
               </div>

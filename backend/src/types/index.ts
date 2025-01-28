@@ -72,6 +72,7 @@ export interface LoginRequestBody {
 // User Data Interface
 // Structure for user data in responses
 export interface UserData {
+    _id:Types.ObjectId
     name: string;        // User's name
     email: string;       // User's email
     phone: string;       // User's phone
@@ -86,11 +87,20 @@ export interface ApiResponse {
     data?: any;          // Optional response data
 }
 
+
+export interface UserListItem {
+    _id:Types.ObjectId;
+    name: string;
+    email: string;
+    phone: string;
+}
+
 // Extended User API Response Interface
 // Specific structure for user-related responses
 export interface UserApiResponse extends ApiResponse {
     data?: {
-        user?: UserData;      // User information
-        tokens?: TokenPayload; // Authentication tokens
+        user?: UserData;
+        usersList?: UserListItem[];  // Add this line
+        tokens?: TokenPayload;
     };
 }

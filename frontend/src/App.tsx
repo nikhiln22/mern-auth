@@ -3,28 +3,40 @@ import "./App.css";
 import LoginPage from "./pages/user/LoginPage";
 import RegisterPage from "./pages/user/RegisterPage";
 import HomePage from "./pages/user/HomePage";
-import PublicRoutes from "./routes/PublicRoutes";
-import PrivateRoutes from "./routes/PrivateRoute";
+import UserPublicRoutes from "./routes/userRoute/PublicRoutes";
+import UserPrivateRoutes from "./routes/userRoute/PrivateRoute";
+import AdminPublicRoutes from "./routes/adminRoute/PublicRoute";
+import AdminPrivateRoutes from "./routes/adminRoute/PrivateRoute";
 import ProfilePage from "./pages/user/ProfilePage";
-
+import AdminLoginPage from "./pages/admin/LoginPage";
+import DashboardPage from "./pages/admin/DashboardPage";
 
 function App() {
   return (
     <>
       <BrowserRouter>
         <Routes>
-          {/* private routes */}
-
-          <Route element={<PrivateRoutes />}>
+          {/*user private routes */}
+          <Route element={<UserPrivateRoutes />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
+          
 
-          {/* public routes */}
-
-          <Route element={<PublicRoutes />}>
+          {/*user public routes */}
+          <Route element={<UserPublicRoutes />}>
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
+          </Route>
+
+          {/*admin private routes */}
+          <Route element={<AdminPrivateRoutes />}>
+          <Route path="/admin/dashboard" element={<DashboardPage />} />
+          </Route>
+
+          {/*admin public routes */}
+          <Route element={<AdminPublicRoutes />}>
+          <Route path="/admin" element={<AdminLoginPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -2,9 +2,9 @@ import express, { Express } from "express";
 import dotenv from "dotenv";
 import connectDB from "./config/db";
 import userRoute from "./routes/userRoutes";
+import adminRoute from "./routes/adminRoutes"
 import cors from "cors";
-import fs from 'fs';
-import path from 'path';
+
 
 // load environment variables
 dotenv.config();
@@ -20,7 +20,7 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('public/uploads'));
-// app.use(express.static(path.join(__dirname, 'public/uploads')));
+
 
 // CORS Configuration
 const corsOptions = {
@@ -34,6 +34,7 @@ app.use(cors(corsOptions));
 
 // Routes
 app.use("/", userRoute);
+app.use("/admin",adminRoute);
 
 // Start server function
 const startServer = async () => {

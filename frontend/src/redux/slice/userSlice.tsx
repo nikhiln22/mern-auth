@@ -21,10 +21,21 @@ export const userSlice = createSlice({
       state.isAuthenticated = true;
     },
     updateImagePath: (state, action: PayloadAction<{ imagePath: string }>) => {
-        if (state.user) {
-          state.user.imagePath = action.payload.imagePath;
-        }
-      },
+      if (state.user) {
+        state.user.imagePath = action.payload.imagePath;
+      }
+    },
+    updateUserDetails: (
+      state,
+      action: PayloadAction<{ name?: string; email?: string; phone?: string }>
+    ) => {
+      if (state.user) {
+        const { name, email, phone } = action.payload;
+        if (name !== undefined) state.user.name = name;
+        if (email !== undefined) state.user.email = email;
+        if (phone !== undefined) state.user.phone = phone;
+      }
+    },
     logoutSuccess: (state) => {
       state.isAuthenticated = false;
       state.user = null;
@@ -33,6 +44,11 @@ export const userSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const {loginSuccess, logoutSuccess, updateImagePath } = userSlice.actions;
+export const {
+  loginSuccess,
+  logoutSuccess,
+  updateImagePath,
+  updateUserDetails,
+} = userSlice.actions;
 
 export default userSlice.reducer;
