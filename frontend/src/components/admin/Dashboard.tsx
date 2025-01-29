@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
-import Swal from "sweetalert2"; 
-import { Search, Edit2, Trash2, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import Swal from "sweetalert2";
+import {
+  Search,
+  Edit2,
+  Trash2,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import Cookies from "js-cookie";
 import axios from "axios";
 import { IUser } from "../../types";
@@ -14,6 +21,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const usersPerPage = 10;
+
 
   useEffect(() => {
     fetchUsers();
@@ -189,6 +197,7 @@ const AdminDashboard = () => {
         <button
           onClick={() => {
             setEditingUser(null);
+
             setIsDialogOpen(true); // Open the dialog for adding a new user
           }}
           className="bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-black"
@@ -229,37 +238,29 @@ const AdminDashboard = () => {
                 </tr>
               ) : currentUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={5} className="px-6 py-4 text-center">
                     No users found.
                   </td>
                 </tr>
               ) : (
                 currentUsers.map((user, index) => (
                   <tr key={user._id}>
-                    <td className="px-6 py-4 text-center text-sm font-medium text-gray-900 border-2">
-                      {index + 1}
-                    </td>
-                    <td className="px-6 py-4 text-center text-sm font-medium text-gray-900 border-2">
-                      {user.name}
-                    </td>
-                    <td className="px-6 py-4 text-center text-sm font-medium text-gray-900 border-2">
-                      {user.email}
-                    </td>
-                    <td className="px-6 py-4 text-center text-sm font-medium text-gray-900 border-2">
-                      {user.phone}
-                    </td>
-                    <td className="px-6 py-4 text-center text-sm font-medium text-gray-900 border-2">
+                    <td className="px-6 py-4 text-center">{index + 1}</td>
+                    <td className="px-6 py-4 text-center">{user.name}</td>
+                    <td className="px-6 py-4 text-center">{user.email}</td>
+                    <td className="px-6 py-4 text-center">{user.phone}</td>
+                    <td className="px-6 py-4 text-center space-x-2">
                       <button
                         onClick={() => handleEdit(user)}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-blue-500 hover:text-blue-700"
                       >
-                        <Edit2 className="inline-block w-5 h-5" />
+                        <Edit2 className="h-5 w-5" />
                       </button>
                       <button
-                        onClick={() => confirmDelete(user._id!)}
-                        className="ml-4 text-red-600 hover:text-red-900"
+                        onClick={() => confirmDelete(user._id)}
+                        className="text-red-500 hover:text-red-700"
                       >
-                        <Trash2 className="inline-block w-5 h-5" />
+                        <Trash2 className="h-5 w-5" />
                       </button>
                     </td>
                   </tr>
@@ -272,74 +273,118 @@ const AdminDashboard = () => {
 
       <div className="mt-6 flex justify-between items-center">
         <button
-          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
-          className="px-4 py-2 bg-gray-200 rounded-lg disabled:opacity-50"
+          onClick={() => setCurrentPage(currentPage - 1)}
+          className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 disabled:opacity-50"
         >
-          <ChevronLeft className="h-4 w-4 text-gray-700" />
+          <ChevronLeft className="h-4 w-4" />
         </button>
-        <span className="text-sm text-gray-700">
+
+        <span className="text-gray-700">
           Page {currentPage} of {totalPages}
         </span>
+
         <button
-          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
-          className="px-4 py-2 bg-gray-200 rounded-lg disabled:opacity-50"
+          onClick={() => setCurrentPage(currentPage + 1)}
+          className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 disabled:opacity-50"
         >
-          <ChevronRight className="h-4 w-4 text-gray-700" />
+          <ChevronRight className="h-4 w-4" />
         </button>
       </div>
 
+      {/* Dialog for adding/editing users */}
       {isDialogOpen && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md">
+        <div className="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">
+              {editingUser ? "Edit User" : "Add New User"}
+            </h2>
+
             <form onSubmit={handleSubmit}>
-              <h2 className="text-lg font-semibold mb-4">Add/Edit User</h2>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Name</label>
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Name
+                </label>
                 <input
                   type="text"
+                  id="name"
                   name="name"
                   defaultValue={editingUser?.name || ""}
-                  className="mt-1 px-4 py-2 border rounded-lg w-full"
+                  required
+                  className="mt-1 p-2 w-full border rounded"
                 />
               </div>
+
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Email
+                </label>
                 <input
                   type="email"
+                  id="email"
                   name="email"
                   defaultValue={editingUser?.email || ""}
-                  className="mt-1 px-4 py-2 border rounded-lg w-full"
+                  required
+                  className="mt-1 p-2 w-full border rounded"
                 />
               </div>
+
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Mobile</label>
+                <label
+                  htmlFor="mobile"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Mobile
+                </label>
                 <input
                   type="text"
+                  id="mobile"
                   name="mobile"
                   defaultValue={editingUser?.phone || ""}
-                  className="mt-1 px-4 py-2 border rounded-lg w-full"
+                  required
+                  className="mt-1 p-2 w-full border rounded"
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Password</label>
-                <input
-                  type="password"
-                  name="password"
-                  className="mt-1 px-4 py-2 border rounded-lg w-full"
-                />
-              </div>
+
+              {/* Only show the password field when adding a new user */}
+              {!editingUser && (
+                <div className="mb-4">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    required
+                    className="mt-1 p-2 w-full border rounded"
+                  />
+                </div>
+              )}
+
               <div className="flex justify-end gap-4">
                 <button
                   type="button"
                   onClick={() => setIsDialogOpen(false)}
-                  className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+                  className="bg-gray-300 text-gray-800 px-4 py-2 rounded"
                 >
                   Cancel
                 </button>
-                <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-lg">
-                  {editingUser ? "Update" : "Add"} User
+                <button
+                  type="submit"
+                  className="bg-black text-white px-4 py-2 rounded"
+                >
+                  {editingUser ? "Update User" : "Add User"}
                 </button>
               </div>
             </form>

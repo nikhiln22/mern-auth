@@ -1,33 +1,42 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 import axios from "axios";
 import Cookie from "js-cookie";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../redux/slice/userSlice";
+import { Formik, Field, Form, ErrorMessage } from "formik";
+import * as Yup from "yup";
 
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const handleClick = async (e: any) => {
-    e.preventDefault();
-    const formdata = {
-      email: email,
-      password: password,
-    };
 
-    console.log("formData:", formdata);
+  const LoginSchema = Yup.object().shape({
+    email: Yup.string()
+      .email("Invalid email address")
+      .required("Email is required"),
+    password: Yup.string()
+      .min(8, "Password must be at least 8 characters long")
+      .required("Password is required"),
+  });
 
-    const result = await axios.post("http://localhost:3000/login", formdata);
-    console.log("result:", result);
-    if (result.status === 200) {
-      dispatch(loginSuccess({ userData: result.data.data.user }));
-      Cookie.set("Accesstoken", result.data.data.tokens.accessToken);
-      Cookie.set("Refreshtoken", result.data.data.tokens.refreshToken);
-      navigate("/");
+  const handleSubmit = async (values: { email: string; password: string }) => {
+    try {
+      const result = await axios.post("http://localhost:3000/login", values);
+      if (result.status === 200) {
+        dispatch(loginSuccess({ userData: result.data.data.user }));
+        Cookie.set("Accesstoken", result.data.data.tokens.accessToken);
+        Cookie.set("Refreshtoken", result.data.data.tokens.refreshToken);
+        navigate("/");
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Axios error:", error.response?.data.message);
+      } else {
+        console.error("Unexpected error:", error);
+      }
     }
   };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-md">
@@ -37,46 +46,55 @@ const Login = () => {
         <p className="text-center text-gray-500 mb-6">
           Welcome back! Please login to your account.
         </p>
-        <form
-          onSubmit={(e) => {
-            handleClick(e);
-          }}
+        <Formik
+          initialValues={{ email: "", password: "" }}
+          validationSchema={LoginSchema}
+          onSubmit={handleSubmit}
         >
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Email Address
-            </label>
-            <input
-              type="email"
-              placeholder="Enter your email address"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-              }}
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-            />
-          </div>
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-              }}
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md transition duration-200"
-          >
-            Login
-          </button>
-        </form>
+          {({ isSubmitting }) => (
+            <Form>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Email Address
+                </label>
+                <Field
+                  type="email"
+                  name="email"
+                  placeholder="Enter your email address"
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                />
+                <ErrorMessage
+                  name="email"
+                  component="div"
+                  className="text-sm text-red-500 mt-1"
+                />
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Password
+                </label>
+                <Field
+                  type="password"
+                  name="password"
+                  placeholder="Enter your password"
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                />
+                <ErrorMessage
+                  name="password"
+                  component="div"
+                  className="text-sm text-red-500 mt-1"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md transition duration-200"
+              >
+                {isSubmitting ? "Logging in..." : "Login"}
+              </button>
+            </Form>
+          )}
+        </Formik>
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">
             Don't have an account?{" "}
