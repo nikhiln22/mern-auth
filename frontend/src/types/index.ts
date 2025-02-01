@@ -1,6 +1,6 @@
 
 export interface IUser {
-    _id?: string;
+    _id: string;
     name: string;
     email: string;
     phone: string;
@@ -22,3 +22,10 @@ export interface IRegisterCredentials {
     password: string;
     imagePath?: string;
 }
+
+export interface IUserFormValues {
+    name: string;
+    email: string;
+    phone: string;
+    password?: string;
+  }

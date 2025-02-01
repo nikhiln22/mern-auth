@@ -1,26 +1,39 @@
-import { UserCircle } from "lucide-react"; // Import UserCircle icon
+import { UserCircle } from "lucide-react"; 
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutSuccess } from "../../redux/slice/userSlice";
 import { useState } from "react";
-import type { RootState } from "../../redux/store"; // Import the RootState type
+import type { RootState } from "../../redux/store/Store";
+import Swal from "sweetalert2"; 
 
 const Header = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // Get user from Redux store with proper type
   const { user } = useSelector((state: RootState) => state.user);
 
-  const handleLogout = () => {
-    Cookies.remove("Accesstoken");
-    Cookies.remove("Refreshtoken");
-    dispatch(logoutSuccess());
-    navigate("/login");
-    console.log("Logout clicked");
-  };
+  const handleLogout=()=>{
+    Swal.fire({
+      title:"Are you Sure?",
+      text:"you will be logged out of your account",
+      icon:"warning",
+      showCancelButton:true,
+      confirmButtonText:"yes,logout",
+      cancelButtonText:"cancel",
+    }).then((result)=>{
+      if(result.isConfirmed){
+        Cookies.remove("Accesstoken");
+        Cookies.remove("Refreshtoken");
+        dispatch(logoutSuccess());
+        Swal.fire("Logged Out!","You have been Successfully logged out.","success")
+        .then(()=>{
+          navigate("/admin");
+        })
+      }
+    })
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white shadow-md">

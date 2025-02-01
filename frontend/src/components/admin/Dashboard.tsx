@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 import {
   Search,
   Edit2,
@@ -11,6 +13,58 @@ import {
 import Cookies from "js-cookie";
 import axios from "axios";
 import { IUser } from "../../types";
+import {IUserFormValues} from "../../types";
+
+// Create two separate validation schemas for adding and editing
+const addUserSchema = Yup.object().shape({
+  name: Yup.string()
+    .min(2, "Name must be at least 2 characters")
+    .max(50, "Name must be less than 50 characters")
+    .matches(/^[a-zA-Z\s]*$/, "Name can only contain letters and spaces")
+    .required("Name is required")
+    .trim(),
+
+  email: Yup.string()
+    .email("Invalid email address")
+    .required("Email is required")
+    .lowercase()
+    .trim(),
+
+  phone: Yup.string()
+    .matches(/^[0-9]{10}$/, "Phone number must be 10 digits")
+    .required("Phone number is required"),
+
+  password: Yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .max(100, "Password is too long")
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+    )
+    .required("Password is required"),
+});
+
+
+const editUserSchema = Yup.object().shape({
+  name: Yup.string()
+    .min(2, "Name must be at least 2 characters")
+    .max(50, "Name must be less than 50 characters")
+    .matches(/^[a-zA-Z\s]*$/, "Name can only contain letters and spaces")
+    .required("Name is required")
+    .trim(),
+
+    email: Yup.string()
+    .email("Invalid email address")
+    .required("Email is required")
+    .lowercase()
+    .trim(),
+
+  phone: Yup.string()
+    .matches(/^[0-9]{10}$/, "Phone number must be 10 digits")
+    .required("Phone number is required"),
+});
+
+
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState<IUser[]>([]);
@@ -117,23 +171,19 @@ const AdminDashboard = () => {
     setIsDialogOpen(true); // Open the dialog when editing
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const formData = new FormData(form);
-
-    const userData: Omit<IUser, "_id" | "createdAt" | "updatedAt"> = {
-      name: formData.get("name") as string,
-      email: formData.get("email") as string,
-      phone: formData.get("mobile") as string,
-      password: formData.get("password") as string,
-    };
-
+  const handleSubmit = async (values: IUserFormValues, { resetForm }: any) => {
     try {
       const adminAccessToken = Cookies.get("adminAccessToken");
       if (!adminAccessToken) {
         throw new Error("No admin access token found");
       }
+
+      const userData = {
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
+        ...(values.password && { password: values.password }),
+      };
 
       const url = editingUser?._id
         ? `http://localhost:3000/admin/edituser/${editingUser._id}`
@@ -161,17 +211,28 @@ const AdminDashboard = () => {
         } else {
           setUsers([...users, response.data.data.user]);
         }
-        setIsDialogOpen(false); // Close the dialog after submitting
+        setIsDialogOpen(false);
         setEditingUser(null);
         setError("");
-        form.reset();
+        resetForm();
+        Swal.fire({
+          title: "Success!",
+          text: `User successfully ${editingUser ? "updated" : "added"}`,
+          icon: "success",
+        });
       }
     } catch (error) {
       console.error("Error saving user:", error);
       setError("Failed to save user");
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to save user",
+        icon: "error",
+      });
     }
   };
 
+ 
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-8 text-gray-800">User Management</h1>
@@ -197,10 +258,9 @@ const AdminDashboard = () => {
         <button
           onClick={() => {
             setEditingUser(null);
-
-            setIsDialogOpen(true); // Open the dialog for adding a new user
+            setIsDialogOpen(true);
           }}
-          className="bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-black"
+          className="bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-900"
         >
           <Plus className="h-4 w-4" />
           Add New User
@@ -209,7 +269,7 @@ const AdminDashboard = () => {
 
       <div className="overflow-x-auto">
         <div className="min-w-full border-2 border-gray-300 rounded-lg">
-          <table className="min-w-full table-fixed divide-y divide-gray-200 border-2 border-gray-300">
+          <table className="min-w-full table-fixed divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="w-16 px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border-2">
@@ -293,7 +353,6 @@ const AdminDashboard = () => {
         </button>
       </div>
 
-      {/* Dialog for adding/editing users */}
       {isDialogOpen && (
         <div className="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-8 rounded-lg w-full max-w-md">
@@ -301,93 +360,126 @@ const AdminDashboard = () => {
               {editingUser ? "Edit User" : "Add New User"}
             </h2>
 
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  defaultValue={editingUser?.name || ""}
-                  required
-                  className="mt-1 p-2 w-full border rounded"
-                />
-              </div>
+            <Formik
+              initialValues={{
+                name: editingUser?.name || "",
+                email: editingUser?.email || "",
+                phone: editingUser?.phone || "",
+                password: "",
+              }}
+              validationSchema={editingUser ? editUserSchema : addUserSchema}
+              onSubmit={handleSubmit}
+            >
+              {({ isSubmitting }) => (
+                <Form className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Name
+                    </label>
+                    <Field
+                      type="text"
+                      id="name"
+                      name="name"
+                      className="mt-1 p-2 w-full border rounded focus:ring-2 focus:ring-black"
+                    />
+                    <ErrorMessage
+                      name="name"
+                      component="div"
+                      className="text-red-500 text-sm mt-1"
+                    />
+                  </div>
 
-              <div className="mb-4">
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  defaultValue={editingUser?.email || ""}
-                  required
-                  className="mt-1 p-2 w-full border rounded"
-                />
-              </div>
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Email
+                    </label>
+                    <Field
+                      type="email"
+                      id="email"
+                      name="email"
+                      className="mt-1 p-2 w-full border rounded focus:ring-2 focus:ring-black"
+                    />
+                    <ErrorMessage
+                      name="email"
+                      component="div"
+                      className="text-red-500 text-sm mt-1"
+                    />
+                  </div>
 
-              <div className="mb-4">
-                <label
-                  htmlFor="mobile"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Mobile
-                </label>
-                <input
-                  type="text"
-                  id="mobile"
-                  name="mobile"
-                  defaultValue={editingUser?.phone || ""}
-                  required
-                  className="mt-1 p-2 w-full border rounded"
-                />
-              </div>
+                  <div>
+                    <label
+                      htmlFor="phone"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Mobile
+                    </label>
+                    <Field
+                      type="text"
+                      id="phone"
+                      name="phone"
+                      className="mt-1 p-2 w-full border rounded focus:ring-2 focus:ring-black"
+                    />
+                    <ErrorMessage
+                      name="phone"
+                      component="div"
+                      className="text-red-500 text-sm mt-1"
+                    />
+                  </div>
 
-              {/* Only show the password field when adding a new user */}
-              {!editingUser && (
-                <div className="mb-4">
-                  <label
-                    htmlFor="password"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    required
-                    className="mt-1 p-2 w-full border rounded"
-                  />
-                </div>
+                  {!editingUser && (
+                    <div>
+                      <label
+                        htmlFor="password"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Password
+                      </label>
+                      <Field
+                        type="password"
+                        id="password"
+                        name="password"
+                        className="mt-1 p-2 w-full border rounded focus:ring-2 focus:ring-black"
+                      />
+                      <ErrorMessage
+                        name="password"
+                        component="div"
+                        className="text-red-500 text-sm mt-1"
+                      />
+                    </div>
+                  )}
+
+                  <div className="flex justify-end gap-4 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsDialogOpen(false);
+                        setEditingUser(null);
+                      }}
+                      className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="bg-black text-white px-4 py-2 rounded hover:bg-gray-900 disabled:opacity-50"
+                    >
+                      {isSubmitting
+                        ? "Saving..."
+                        : editingUser
+                        ? "Update User"
+                        : "Add User"}
+                    </button>
+                  </div>
+                </Form>
               )}
-
-              <div className="flex justify-end gap-4">
-                <button
-                  type="button"
-                  onClick={() => setIsDialogOpen(false)}
-                  className="bg-gray-300 text-gray-800 px-4 py-2 rounded"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-black text-white px-4 py-2 rounded"
-                >
-                  {editingUser ? "Update User" : "Add User"}
-                </button>
-              </div>
-            </form>
+            </Formik>
           </div>
         </div>
       )}
