@@ -13,9 +13,9 @@ import {
 import Cookies from "js-cookie";
 import axios from "axios";
 import { IUser } from "../../types";
-import {IUserFormValues} from "../../types";
+import { IUserFormValues } from "../../types";
 
-// Create two separate validation schemas for adding and editing
+// validation schemas for adding an user
 const addUserSchema = Yup.object().shape({
   name: Yup.string()
     .min(2, "Name must be at least 2 characters")
@@ -44,19 +44,13 @@ const addUserSchema = Yup.object().shape({
     .required("Password is required"),
 });
 
-
+// validation schemas for editing an user
 const editUserSchema = Yup.object().shape({
   name: Yup.string()
     .min(2, "Name must be at least 2 characters")
     .max(50, "Name must be less than 50 characters")
     .matches(/^[a-zA-Z\s]*$/, "Name can only contain letters and spaces")
     .required("Name is required")
-    .trim(),
-
-    email: Yup.string()
-    .email("Invalid email address")
-    .required("Email is required")
-    .lowercase()
     .trim(),
 
   phone: Yup.string()
@@ -173,6 +167,25 @@ const AdminDashboard = () => {
 
   const handleSubmit = async (values: IUserFormValues, { resetForm }: any) => {
     try {
+
+      if (editingUser) {
+        // Show confirmation dialog for editing
+        const result = await Swal.fire({
+          title: "Confirm Update",
+          text: "Are you sure you want to update this user's information?",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonText: "Yes, update it!",
+          cancelButtonText: "Cancel",
+        });
+
+        console.log("result:", result);
+
+        if (!result.isConfirmed) {
+          return; // Exit if user cancels
+        }
+      }
+
       const adminAccessToken = Cookies.get("adminAccessToken");
       if (!adminAccessToken) {
         throw new Error("No admin access token found");
@@ -208,18 +221,26 @@ const AdminDashboard = () => {
               user._id === editingUser._id ? response.data.data.user : user
             )
           );
+
+          // Show success message after update
+          await Swal.fire({
+            title: "Updated!",
+            text: "User information has been updated successfully.",
+            icon: "success",
+          });
+
         } else {
           setUsers([...users, response.data.data.user]);
+          await Swal.fire({
+            title: "Success!",
+            text: "New user has been added successfully.",
+            icon: "success",
+          });
         }
         setIsDialogOpen(false);
         setEditingUser(null);
         setError("");
         resetForm();
-        Swal.fire({
-          title: "Success!",
-          text: `User successfully ${editingUser ? "updated" : "added"}`,
-          icon: "success",
-        });
       }
     } catch (error) {
       console.error("Error saving user:", error);
@@ -232,7 +253,7 @@ const AdminDashboard = () => {
     }
   };
 
- 
+
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-8 text-gray-800">User Management</h1>
@@ -269,22 +290,22 @@ const AdminDashboard = () => {
 
       <div className="overflow-x-auto">
         <div className="min-w-full border-2 border-gray-300 rounded-lg">
-          <table className="min-w-full table-fixed divide-y divide-gray-200">
+          <table className="min-w-full table-fixed border-collapse">
             <thead className="bg-gray-50">
               <tr>
-                <th className="w-16 px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border-2">
+                <th className="w-16 px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border border-gray-300">
                   Sl No
                 </th>
-                <th className="w-1/4 px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border-2">
+                <th className="w-1/4 px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border border-gray-300">
                   User Name
                 </th>
-                <th className="w-1/3 px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border-2">
+                <th className="w-1/3 px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border border-gray-300">
                   Email
                 </th>
-                <th className="w-1/4 px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border-2">
+                <th className="w-1/4 px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border border-gray-300">
                   Mobile Number
                 </th>
-                <th className="w-28 px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border-2">
+                <th className="w-28 px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border border-gray-300">
                   Actions
                 </th>
               </tr>
@@ -292,24 +313,24 @@ const AdminDashboard = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center">
+                  <td colSpan={5} className="px-6 py-4 text-center border border-gray-300">
                     Loading...
                   </td>
                 </tr>
               ) : currentUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center">
+                  <td colSpan={5} className="px-6 py-4 text-center border border-gray-300">
                     No users found.
                   </td>
                 </tr>
               ) : (
                 currentUsers.map((user, index) => (
                   <tr key={user._id}>
-                    <td className="px-6 py-4 text-center">{index + 1}</td>
-                    <td className="px-6 py-4 text-center">{user.name}</td>
-                    <td className="px-6 py-4 text-center">{user.email}</td>
-                    <td className="px-6 py-4 text-center">{user.phone}</td>
-                    <td className="px-6 py-4 text-center space-x-2">
+                    <td className="px-6 py-4 text-center border border-gray-300">{index + 1}</td>
+                    <td className="px-6 py-4 text-center border border-gray-300">{user.name}</td>
+                    <td className="px-6 py-4 text-center border border-gray-300">{user.email}</td>
+                    <td className="px-6 py-4 text-center border border-gray-300">{user.phone}</td>
+                    <td className="px-6 py-4 text-center space-x-2 border border-gray-300">
                       <button
                         onClick={() => handleEdit(user)}
                         className="text-blue-500 hover:text-blue-700"
@@ -392,25 +413,27 @@ const AdminDashboard = () => {
                     />
                   </div>
 
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Email
-                    </label>
-                    <Field
-                      type="email"
-                      id="email"
-                      name="email"
-                      className="mt-1 p-2 w-full border rounded focus:ring-2 focus:ring-black"
-                    />
-                    <ErrorMessage
-                      name="email"
-                      component="div"
-                      className="text-red-500 text-sm mt-1"
-                    />
-                  </div>
+                  {!editingUser && (
+                    <div>
+                      <label
+                        htmlFor="email"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Email
+                      </label>
+                      <Field
+                        type="email"
+                        id="email"
+                        name="email"
+                        className="mt-1 p-2 w-full border rounded focus:ring-2 focus:ring-black"
+                      />
+                      <ErrorMessage
+                        name="email"
+                        component="div"
+                        className="text-red-500 text-sm mt-1"
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <label
@@ -473,8 +496,8 @@ const AdminDashboard = () => {
                       {isSubmitting
                         ? "Saving..."
                         : editingUser
-                        ? "Update User"
-                        : "Add User"}
+                          ? "Update User"
+                          : "Add User"}
                     </button>
                   </div>
                 </Form>

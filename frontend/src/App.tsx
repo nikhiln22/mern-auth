@@ -15,7 +15,7 @@ function App() {
     <>
       <BrowserRouter>
         <Routes>
-          {/*user private routes */}
+          {/*user protected routes */}
           <Route element={<UserPrivateRoutes />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/profile" element={<ProfilePage />} />
@@ -28,7 +28,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
           </Route>
 
-          {/*admin private routes */}
+          {/*admin protected routes */}
           <Route element={<AdminPrivateRoutes />}>
           <Route path="/admin/dashboard" element={<DashboardPage />} />
           </Route>
