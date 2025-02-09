@@ -7,7 +7,8 @@ import {
   updateUserDetails,
 } from "../../redux/slice/userSlice";
 import Cookie from "js-cookie";
-import axios from 'axios'
+import axios from 'axios';
+import {toast} from 'react-toastify'
 
 const UserProfile = () => {
   const dispatch = useDispatch();
@@ -58,9 +59,11 @@ const UserProfile = () => {
           dispatch(
             updateImagePath({ imagePath: response.data.data.user.imagePath })
           );
+          toast.success("Profile image updated successfully!");
         }
       } catch (error) {
         console.error("Error uploading image:", error);
+        toast.error("Failed to upload image. Please try again!"); 
       }
     }
   };
@@ -85,10 +88,12 @@ const UserProfile = () => {
         if (response.data.success) {
           dispatch(updateUserDetails(tempDetails));
           setUserDetails(tempDetails);
+          toast.success("Profile updated successfully!"); 
         }
       } catch (error) {
         console.error("Error updating profile:", error);
         setTempDetails({ ...userDetails });
+        toast.error("Failed to update profile. Please try again!"); 
       }
     } else {
       setTempDetails({ ...userDetails });
