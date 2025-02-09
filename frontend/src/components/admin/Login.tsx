@@ -3,6 +3,7 @@ import axios from "axios";
 import Cookie from "js-cookie";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { toast } from 'react-toastify';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -45,18 +46,19 @@ const Login = () => {
                 "http://localhost:3000/admin/adminlogin",
                 formdata
               );
-              console.log("result:", result);
-              console.log("result.data.data.tokens:", result.data.data.tokens);
-              console.log("result.data.data.usersList:", result.data.data.usersList);
               if (result.status === 200) {
                 console.log("status is 200");
                 Cookie.set("adminAccessToken", result.data.data.tokens.accessToken);
                 Cookie.set("adminRefreshToken", result.data.data.tokens.refreshToken);
-                console.log("navigating to the admin dashboard");
                 navigate("/admin/dashboard");
+                toast.success("Login successful!", { autoClose: 3000 });
               }
-            } catch (error) {
-              console.error("Login failed:", error);
+            } catch (error: any) {
+              if (error.response) {
+                toast.error(error.response.data.message);
+              } else {
+                toast.error("Network error. Please check your connection.");
+              }
             }
           }}
         >

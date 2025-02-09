@@ -6,7 +6,7 @@ import { loginSuccess } from "../../redux/slice/userSlice";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { toast} from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+
 
 const Login = () => {
   const navigate = useNavigate();

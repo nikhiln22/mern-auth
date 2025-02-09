@@ -54,7 +54,7 @@ export const adminLogin: UserHandler = async (req, res, next) => {
     if (!admin) {
       const response: UserApiResponse = {
         success: false,
-        message: "Invalid credentials",
+        message: "Invalid Email",
       };
       res.status(401).json(response);
       return;
@@ -64,7 +64,7 @@ export const adminLogin: UserHandler = async (req, res, next) => {
     if (!isValidPassword) {
       const response: UserApiResponse = {
         success: false,
-        message: "Invalid credentials",
+        message: "Invalid Password",
       };
       res.status(401).json(response);
       return;
