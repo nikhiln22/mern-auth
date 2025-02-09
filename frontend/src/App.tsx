@@ -9,18 +9,21 @@ import AdminPrivateRoutes from "./routes/adminRoute/PrivateRoute";
 import ProfilePage from "./pages/user/ProfilePage";
 import AdminLoginPage from "./pages/admin/LoginPage";
 import DashboardPage from "./pages/admin/DashboardPage";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   return (
     <>
       <BrowserRouter>
+        <ToastContainer position="top-center" autoClose={5000} />
         <Routes>
           {/*user protected routes */}
           <Route element={<UserPrivateRoutes />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
-          
+
 
           {/*user public routes */}
           <Route element={<UserPublicRoutes />}>
@@ -30,12 +33,12 @@ function App() {
 
           {/*admin protected routes */}
           <Route element={<AdminPrivateRoutes />}>
-          <Route path="/admin/dashboard" element={<DashboardPage />} />
+            <Route path="/admin/dashboard" element={<DashboardPage />} />
           </Route>
 
           {/*admin public routes */}
           <Route element={<AdminPublicRoutes />}>
-          <Route path="/admin" element={<AdminLoginPage />} />
+            <Route path="/admin" element={<AdminLoginPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -22,4 +22,5 @@ userRoute.post(
 );
 userRoute.put("/updateprofile", auth, updateUserProfile);
 
+
 export default userRoute;

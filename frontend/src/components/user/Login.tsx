@@ -5,6 +5,8 @@ import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../redux/slice/userSlice";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { toast} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -27,12 +29,15 @@ const Login = () => {
         Cookie.set("Accesstoken", result.data.data.tokens.accessToken);
         Cookie.set("Refreshtoken", result.data.data.tokens.refreshToken);
         navigate("/");
+        toast.success("Login successful!");
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error("Axios error:", error.response?.data.message);
+        const errorMessage = error.response?.data.message || "An error occurred";
+        toast.error(errorMessage); 
       } else {
         console.error("Unexpected error:", error);
+        toast.error("An unexpected error occurred");
       }
     }
   };

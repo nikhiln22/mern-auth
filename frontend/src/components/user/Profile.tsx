@@ -6,8 +6,8 @@ import {
   updateImagePath,
   updateUserDetails,
 } from "../../redux/slice/userSlice";
-import axios from "axios";
 import Cookie from "js-cookie";
+import axios from 'axios'
 
 const UserProfile = () => {
   const dispatch = useDispatch();
@@ -88,7 +88,6 @@ const UserProfile = () => {
         }
       } catch (error) {
         console.error("Error updating profile:", error);
-        // Revert changes on error
         setTempDetails({ ...userDetails });
       }
     } else {
@@ -114,7 +113,9 @@ const UserProfile = () => {
     <div className="min-h-screen bg-gray-100 py-20">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-bold text-center mb-8">User Profile</h2>
+          <h2 className="text-2xl font-bold text-center mb-8">
+            {isEditing ? "Edit Profile" : "User Profile"}
+          </h2>
 
           <div className="flex flex-col items-center space-y-6">
             {/* Profile Image Section */}

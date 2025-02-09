@@ -29,7 +29,7 @@ const Header = () => {
         dispatch(logoutSuccess());
         Swal.fire("Logged Out!","You have been Successfully logged out.","success")
         .then(()=>{
-          navigate("/admin");
+          navigate("/login");
         })
       }
     })

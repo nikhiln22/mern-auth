@@ -11,9 +11,9 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Cookies from "js-cookie";
-import axios from "axios";
 import { IUser } from "../../types";
 import { IUserFormValues } from "../../types";
+import { adminAxiosInstance } from "../../utils/adminAxiosInstance";
 
 // validation schemas for adding an user
 const addUserSchema = Yup.object().shape({
@@ -82,7 +82,7 @@ const AdminDashboard = () => {
         throw new Error("No admin access token found");
       }
 
-      const response = await axios.get<{
+      const response = await adminAxiosInstance.get<{
         success: boolean;
         data: { usersList: IUser[] };
       }>("http://localhost:3000/admin/dashboard", {
@@ -120,7 +120,7 @@ const AdminDashboard = () => {
         throw new Error("No admin access token found");
       }
 
-      const response = await axios.delete<{ success: boolean }>(
+      const response = await adminAxiosInstance.delete<{ success: boolean }>(
         `http://localhost:3000/admin/deleteuser/${userId}`,
         {
           headers: {
@@ -202,7 +202,7 @@ const AdminDashboard = () => {
         ? `http://localhost:3000/admin/edituser/${editingUser._id}`
         : "http://localhost:3000/admin/adduser";
 
-      const response = await axios<{ success: boolean; data: { user: IUser } }>(
+      const response = await adminAxiosInstance<{ success: boolean; data: { user: IUser } }>(
         {
           method: editingUser ? "put" : "post",
           url: url,

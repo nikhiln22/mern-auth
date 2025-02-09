@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import axios from "axios";
 import * as Yup from "yup";
+import { toast } from "react-toastify"
 
 // Validation schema using Yup
 const RegisterSchema = Yup.object().shape({
@@ -62,12 +63,15 @@ const Register = () => {
       console.log("response:", response);
 
       if (response.status === 201) {
-        console.log("Registration Successful!");
+        toast.success("User Registered Successfully!", { autoClose: 3000 });
         navigate("/login");
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error("Registration failed:", error.response?.data.message);
+        const errorMessage = error.response?.data.message || "Registration Failed";
+        toast.error(errorMessage);
+      }else{
+        toast.error("An unexpected error occurred");
       }
     }
   };

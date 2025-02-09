@@ -14,9 +14,8 @@ export const auth: RequestHandler = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // Log all headers for debugging
-    console.log("Request Headers:", req.headers);
 
+    console.log("Request Headers:", req.headers);
     const authHeader = req.headers.authorization;
     console.log("authHeader:", authHeader);
 
@@ -37,6 +36,9 @@ export const auth: RequestHandler = async (
     console.log("token:", token);
 
     const decoded = jwt.verify(token, JWT_CONFIG.secret) as JwtPayload;
+    if(!decoded){
+      console.log("token faileddskjn gghudhguhgvdvgdhvhni");
+    }
 
     console.log("decoded:", decoded);
 

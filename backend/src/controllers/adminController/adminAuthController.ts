@@ -91,4 +91,54 @@ export const adminLogin: UserHandler = async (req, res, next) => {
   }
 };
 
+// refreshing the access token using the refresh token
+export const refreshToken: UserHandler = async (req, res) => {
+  try {
+    console.log("entering to the access token recreating controller for admin upon access token expiry")
+    const refreshToken = req.body.refreshToken;
+
+    if (!refreshToken) {
+      return res.status(401).json({
+        success: false,
+        message: "Refresh token is required"
+      })
+    }
+
+    try {
+      const decoded = jwt.verify(refreshToken, JWT_CONFIG.secret) as JwtPayload;
+      console.log("decoded", decoded);
+
+      const admin = await adminModel.findById(decoded.userId);
+
+      if (!admin || !admin.isAdmin) {
+        return res.status(401).json({
+          success: false,
+          message: "invalid refresh token"
+        });
+      }
+
+      const tokens = generateTokens(admin);
+
+      console.log("newly created tokens for admin:", tokens);
+
+      res.json({
+        success: true,
+        message: "Tokens created successfully for admin",
+        data: { tokens }
+      });
+    } catch (error) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid refresh Token"
+      });
+    }
+  } catch (error) {
+    console.error("Refresh Token Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error"
+    });
+  }
+}
+
 
