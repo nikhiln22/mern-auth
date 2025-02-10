@@ -4,14 +4,13 @@ import { AuthRequest } from "../../types";
 import userModel from "../../models/userModel";
 
 // updating the already existing user profile image
-
 export const uploadProfileImage: RequestHandler = async (
   req: AuthRequest,
   res: Response
 ): Promise<void> => {
   try {
     console.log("entering the image uploading controller");
-    // Check if user exists in request (set by auth middleware)
+  
     if (!req.user) {
       res.status(401).json({
         success: false,
@@ -20,7 +19,7 @@ export const uploadProfileImage: RequestHandler = async (
       return;
     }
 
-    // Check if file exists in request
+  
     if (!req.file) {
       res.status(400).json({
         success: false,
@@ -29,24 +28,25 @@ export const uploadProfileImage: RequestHandler = async (
       return;
     }
 
-    // Get the file path that was saved by multer
+   
     const filePath = req.file.path;
 
-    // Convert file path to URL format
-    const path = req.file.path.replace(/\\/g, "/");
+    console.log("filePath:",filePath);
+
+    const path = filePath.replace(/\\/g, "/");
     console.log(path, "--------------path");
     const imageUrl = path.replace(
       "/home/user/Code/Mern-Auth/backend/public",
       "http://localhost:3000"
     );
 
-    // Update user profile with new image URL
+  
     const updatedUser = await userModel.findByIdAndUpdate(
       req.user.userId,
       { imagePath: imageUrl },
       {
         new: true,
-        select: "-password", // Exclude password from the returned user object
+        select: "-password",
       }
     );
 
@@ -83,7 +83,6 @@ export const uploadProfileImage: RequestHandler = async (
 };
 
 // updating the already existing user profile details
-
 export const updateUserProfile: RequestHandler = async (
   req: AuthRequest,
   res: Response
@@ -91,7 +90,7 @@ export const updateUserProfile: RequestHandler = async (
   try {
     console.log("entering the profile update controller");
 
-    // Check if user exists in request (set by auth middleware)
+ 
     if (!req.user) {
       res.status(401).json({
         success: false,
@@ -102,7 +101,7 @@ export const updateUserProfile: RequestHandler = async (
 
     const { name, email, phone } = req.body;
 
-    // Validate required fields
+   
     if (!name || !email) {
       res.status(400).json({
         success: false,
@@ -111,7 +110,7 @@ export const updateUserProfile: RequestHandler = async (
       return;
     }
 
-    // Check if email already exists for another user
+ 
     const existingUser = await userModel.findOne({
       email,
       _id: { $ne: req.user.userId },
@@ -125,7 +124,6 @@ export const updateUserProfile: RequestHandler = async (
       return;
     }
 
-    // Update user profile
     const updatedUser = await userModel.findByIdAndUpdate(
       req.user.userId,
       {
@@ -135,7 +133,7 @@ export const updateUserProfile: RequestHandler = async (
       },
       {
         new: true,
-        select: "-password", // Exclude password from the returned user object
+        select: "-password", 
       }
     );
 

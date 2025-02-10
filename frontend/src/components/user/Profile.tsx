@@ -42,6 +42,7 @@ const UserProfile = () => {
         setProfileImage(reader.result);
       }
     };
+
     reader.readAsDataURL(file);
 
     try {
@@ -87,7 +88,6 @@ const UserProfile = () => {
           </h2>
 
           <div className="flex flex-col items-center space-y-6">
-            {/* Profile Image Section */}
             <div className="relative">
               <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
                 {profileImage ? (
@@ -111,7 +111,6 @@ const UserProfile = () => {
               />
             </div>
 
-            {/* User Details Section */}
             <Formik
               initialValues={{
                 name: userData?.name || "",
@@ -177,7 +176,6 @@ const UserProfile = () => {
                     <ErrorMessage name="phone" component="div" className="text-sm text-red-500" />
                   </div>
 
-                  {/* Action Buttons */}
                   <div className="flex justify-end space-x-4 pt-4">
                     {isEditing ? (
                       <>
