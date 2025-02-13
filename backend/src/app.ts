@@ -18,7 +18,8 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
 
 // Middleware
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+// serving static files from the uploads folder
 app.use('/uploads', express.static('public/uploads'));
 
 
@@ -27,7 +28,7 @@ const corsOptions = {
   origin: CORS_ORIGIN,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   credentials: true,
-  optionsSuccessStatus: 200,
+  optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));

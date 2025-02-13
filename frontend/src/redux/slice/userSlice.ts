@@ -9,6 +9,7 @@ export interface UserState {
 
 const initialState: UserState = {
   user: null,
+
   isAuthenticated: false,
 };
 

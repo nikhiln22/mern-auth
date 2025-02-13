@@ -10,7 +10,7 @@ export const uploadProfileImage: RequestHandler = async (
 ): Promise<void> => {
   try {
     console.log("entering the image uploading controller");
-  
+
     if (!req.user) {
       res.status(401).json({
         success: false,
@@ -19,7 +19,7 @@ export const uploadProfileImage: RequestHandler = async (
       return;
     }
 
-  
+
     if (!req.file) {
       res.status(400).json({
         success: false,
@@ -28,10 +28,10 @@ export const uploadProfileImage: RequestHandler = async (
       return;
     }
 
-   
+
     const filePath = req.file.path;
 
-    console.log("filePath:",filePath);
+    console.log("filePath:", filePath);
 
     const path = filePath.replace(/\\/g, "/");
     console.log(path, "--------------path");
@@ -40,7 +40,7 @@ export const uploadProfileImage: RequestHandler = async (
       "http://localhost:3000"
     );
 
-  
+
     const updatedUser = await userModel.findByIdAndUpdate(
       req.user.userId,
       { imagePath: imageUrl },
@@ -90,7 +90,7 @@ export const updateUserProfile: RequestHandler = async (
   try {
     console.log("entering the profile update controller");
 
- 
+
     if (!req.user) {
       res.status(401).json({
         success: false,
@@ -101,7 +101,7 @@ export const updateUserProfile: RequestHandler = async (
 
     const { name, email, phone } = req.body;
 
-   
+
     if (!name || !email) {
       res.status(400).json({
         success: false,
@@ -110,7 +110,7 @@ export const updateUserProfile: RequestHandler = async (
       return;
     }
 
- 
+
     const existingUser = await userModel.findOne({
       email,
       _id: { $ne: req.user.userId },
@@ -133,7 +133,7 @@ export const updateUserProfile: RequestHandler = async (
       },
       {
         new: true,
-        select: "-password", 
+        select: "-password",
       }
     );
 

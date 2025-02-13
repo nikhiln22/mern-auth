@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 
-// Validation schema using Yup
+// user profile validation schema using yup
 const ProfileSchema = Yup.object().shape({
   name: Yup.string()
     .required("Name is required")
@@ -43,7 +43,11 @@ const UserProfile = () => {
       }
     };
 
+    console.log("file 1:", file);
+
     reader.readAsDataURL(file);
+
+    console.log("file 2:", file);
 
     try {
       const formData = new FormData();
